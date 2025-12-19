@@ -1,0 +1,62 @@
+=== TWRP BUILDER DEVICE INFORMATION ===
+
+--- BASIC DEVICE INFO ---
+Device Codename: OnePlus6
+Product Name: OnePlus6
+Brand: OnePlus
+Model: ONEPLUS A6003
+Manufacturer: OnePlus
+Board: sdm845
+Hardware: qcom
+
+--- ANDROID VERSION INFO ---
+Android Version: 11
+API Level: 30
+Build ID: RKQ1.201022.002
+Build Type: user
+Build Tags: release-keys
+Incremental: 2102182155
+
+--- ARCHITECTURE INFO ---
+Supported ABIs: arm64-v8a armeabi-v7a armeabi 
+Primary ABI: arm64-v8a
+Architecture: aarch64
+
+--- SCREEN INFO ---
+Screen Resolution: 1080x2280
+Screen Density: 420 dpi
+Density Scale: 2.625
+
+--- KERNEL INFO ---
+Kernel Version: 4.9.227-perf+
+Detailed Kernel: Linux localhost 4.9.227-perf+ #1 SMP PREEMPT Thu Jan 1 00:00:00 UTC 2021 aarch64
+
+--- BUILD FINGERPRINT ---
+Fingerprint: OnePlus/OnePlus6/OnePlus6:11/RKQ1.201022.002/2102182155:user/release-keys
+Display: RKQ1.201022.002
+
+--- ADDITIONAL PROPERTIES ---
+Bootloader: unknown
+Radio Version: 
+Host: ubuntu-build
+User: android-build
+Time: 2021-02-18 21:55:00
+
+=== TWRP BUILDER REQUIREMENTS ===
+
+Image Type Required: recovery.img OR boot.img OR boot.img + vendor_boot.img
+Android Version: 11
+Screen Resolution: 1080x2280
+Device Codename: OnePlus6
+Architecture: arm64-v8a
+
+=== INSTRUCTIONS ===
+1. Visit: https://www.hovatek.com/twrpbuilder/
+2. Select image type (recovery.img, boot.img, or both)
+3. Enter Android Version: 11
+4. Enter Screen Resolution: 1080x2280
+5. Upload your device's recovery/boot image files
+6. Optional: Add touch driver info if touch doesn't work
+7. Build and download your custom TWRP recovery
+
+Generated on: 2024-01-15 14:30:45
