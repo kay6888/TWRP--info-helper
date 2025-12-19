@@ -4,12 +4,12 @@ plugins {
 
 android {
     namespace 'com.hovatek.twrpinfo'
-    compileSdk 33
+    compileSdk 34
 
     defaultConfig {
         applicationId "com.hovatek.twrpinfo"
         minSdk 21
-        targetSdk 33
+        targetSdk 34
         versionCode 1
         versionName "1.0"
     }
