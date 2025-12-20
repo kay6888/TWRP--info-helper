@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">TWRP Info Collector</string>
+    <string name="app_title">TWRP Device Info Collector</string>
+    <string name="app_description">Collect all device information needed for Hovatek Online TWRP Builder</string>
+    <string name="collect_button">Collect Info</string>
+    <string name="save_button">Save to File</string>
+    <string name="initial_message">Tap \'Collect Info\' to gather your device information for TWRP Builder.\n\nThis app will collect:\n• Device codename and model\n• Android version\n• Screen resolution\n• CPU architecture\n• Kernel version\n• And more!\n\nThe information will be saved to:\nsdcard/Download/twrp-builder-{codename}.txt</string>
+    <string name="footer_message">Data saved to: sdcard/Download/twrp-builder-{codename}.txt\nVisit: https://www.hovatek.com/twrpbuilder/</string>
+</resources>
