@@ -117,8 +117,37 @@ This will prompt you for:
 #### Step 2: Configure the Keystore
 
 1. Place your `release-keystore.jks` file in the `app/` directory
-2. Open `app/build.gradle`
-3. Update the `signingConfigs.release` block with your keystore details:
+2. Choose one of the following configuration methods:
+
+**Option A: Using gradle.properties (Recommended)**
+
+Create or edit `gradle.properties` in the project root and add:
+
+```properties
+KEYSTORE_FILE=release-keystore.jks
+KEYSTORE_PASSWORD=your-store-password
+KEY_ALIAS=your-key-alias
+KEY_PASSWORD=your-key-password
+```
+
+Add `gradle.properties` to `.gitignore` to prevent committing credentials!
+
+**Option B: Using Environment Variables**
+
+Set the following environment variables before building:
+
+```bash
+export KEYSTORE_FILE=release-keystore.jks
+export KEYSTORE_PASSWORD=your-store-password
+export KEY_ALIAS=your-key-alias
+export KEY_PASSWORD=your-key-password
+```
+
+The build.gradle is already configured to use these environment variables or gradle.properties automatically.
+
+**Option C: Direct Modification (Not Recommended)**
+
+If you prefer, you can directly modify `app/build.gradle`, but be careful not to commit real credentials:
 
 ```gradle
 signingConfigs {
@@ -131,18 +160,7 @@ signingConfigs {
 }
 ```
 
-**Security Tip**: Instead of hardcoding passwords, use environment variables or `gradle.properties`:
-
-```gradle
-signingConfigs {
-    release {
-        storeFile file(System.getenv("KEYSTORE_FILE") ?: "release-keystore.jks")
-        storePassword System.getenv("KEYSTORE_PASSWORD")
-        keyAlias System.getenv("KEY_ALIAS")
-        keyPassword System.getenv("KEY_PASSWORD")
-    }
-}
-```
+**Security Warning**: Never commit real keystore credentials to source control! Always use gradle.properties (with .gitignore) or environment variables for production builds.
 
 #### Step 3: Enable Signing in Build Configuration
 

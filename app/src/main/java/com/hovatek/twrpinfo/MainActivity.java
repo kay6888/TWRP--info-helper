@@ -503,6 +503,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     // Root detection methods
+    // NOTE: These methods perform passive detection only. They do not modify the system
+    // or grant root access. The isRootGranted() method attempts to execute a harmless
+    // command to verify if root access would be available, but does not request or use
+    // elevated privileges for any actual operations.
+    
     private boolean isRootAvailable() {
         // Check for su binary in common paths
         String[] suPaths = {
@@ -529,6 +534,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private boolean isRootGranted() {
+        // This method attempts to execute a harmless 'id' command with su to check
+        // if root access would be granted. It does not modify anything on the system.
+        // If root is available, the user may see a root permission prompt from their
+        // root management app (SuperSU, Magisk, etc.)
         Process process = null;
         try {
             process = Runtime.getRuntime().exec("su -c id");
@@ -541,7 +550,7 @@ public class MainActivity extends AppCompatActivity {
                     process.waitFor();
                 }
                 
-                return output != null && output.toLowerCase().contains("uid=0");
+                return output != null && output.toLowerCase(Locale.ROOT).contains("uid=0");
             }
         } catch (Exception e) {
             return false;
