@@ -532,17 +532,17 @@ public class MainActivity extends AppCompatActivity {
         Process process = null;
         try {
             process = Runtime.getRuntime().exec("su -c id");
-            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-            String output = reader.readLine();
-            reader.close();
-            
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                process.waitFor(2, java.util.concurrent.TimeUnit.SECONDS);
-            } else {
-                process.waitFor();
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+                String output = reader.readLine();
+                
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    process.waitFor(2, java.util.concurrent.TimeUnit.SECONDS);
+                } else {
+                    process.waitFor();
+                }
+                
+                return output != null && output.toLowerCase().contains("uid=0");
             }
-            
-            return output != null && output.toLowerCase().contains("uid=0");
         } catch (Exception e) {
             return false;
         } finally {

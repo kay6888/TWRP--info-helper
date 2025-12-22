@@ -22,7 +22,8 @@ android {
     // 4. Build with: ./gradlew assembleRelease
     signingConfigs {
         release {
-            // Replace these placeholder values with your actual keystore information
+            // SECURITY WARNING: Replace these placeholder values with your actual keystore information
+            // NEVER commit real credentials to source control!
             // For security, consider using gradle.properties or environment variables instead
             storeFile file("release-keystore.jks")  // Path to your keystore file
             storePassword "your-store-password"      // Your keystore password
@@ -36,7 +37,7 @@ android {
 
     buildTypes {
         release {
-            // Uncomment the line below to use the signing config when your keystore is ready
+            // Uncomment the signingConfig line below when your keystore is ready
             // signingConfig signingConfigs.release
             
             minifyEnabled true
