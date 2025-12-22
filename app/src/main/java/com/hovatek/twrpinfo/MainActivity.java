@@ -417,29 +417,21 @@ public class MainActivity extends AppCompatActivity {
 
     private String readFile(String path) {
         StringBuilder content = new StringBuilder();
-        BufferedReader reader = null;
         try {
             File file = new File(path);
             if (!file.exists() || !file.canRead()) {
                 return null;
             }
-            reader = new BufferedReader(new FileReader(file));
-            String line;
-            while ((line = reader.readLine()) != null) {
-                content.append(line).append("\n");
+            try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    content.append(line).append("\n");
+                }
             }
             return content.toString().trim();
         } catch (Exception e) {
             // File doesn't exist or can't be read
             return null;
-        } finally {
-            if (reader != null) {
-                try {
-                    reader.close();
-                } catch (IOException e) {
-                    // Ignore
-                }
-            }
         }
     }
 
@@ -447,13 +439,14 @@ public class MainActivity extends AppCompatActivity {
         StringBuilder output = new StringBuilder();
         try {
             Process process = Runtime.getRuntime().exec(command);
-            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-            String line;
-            while ((line = reader.readLine()) != null) {
-                output.append(line).append("\n");
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    output.append(line).append("\n");
+                }
             }
-            reader.close();
             process.waitFor();
+            process.destroy();
             return output.toString();
         } catch (Exception e) {
             return null;
