@@ -151,20 +151,30 @@ public class MainActivity extends AppCompatActivity {
                 completed = process.waitFor(1, TimeUnit.SECONDS);
             } else {
                 // For older Android versions, simulate timeout behavior
-                // Check if process completes within a reasonable time
+                final Process finalProcess = process;
+                final boolean[] processCompleted = {false};
+                
                 Thread timeoutThread = new Thread(new Runnable() {
                     @Override
                     public void run() {
                         try {
                             Thread.sleep(1000); // 1 second timeout
-                            process.destroy();
+                            synchronized (processCompleted) {
+                                if (!processCompleted[0]) {
+                                    finalProcess.destroy();
+                                }
+                            }
                         } catch (InterruptedException e) {
                             // Timeout thread interrupted, process probably completed
                         }
                     }
                 });
                 timeoutThread.start();
+                
                 process.waitFor();
+                synchronized (processCompleted) {
+                    processCompleted[0] = true;
+                }
                 timeoutThread.interrupt();
                 completed = true;
             }

@@ -32,10 +32,11 @@ android {
             
             // ⚠️ TEMPORARY: Using debug keystore for testing only ⚠️
             // DO NOT use this for production releases!
-            def debugKeystorePath = System.getProperty("user.home") + "/.android/debug.keystore"
-            def debugKeystoreFile = file(debugKeystorePath)
+            def userHome = System.getProperty("user.home")
+            def debugKeystorePath = userHome ? "${userHome}${File.separator}.android${File.separator}debug.keystore" : null
+            def debugKeystoreFile = debugKeystorePath ? file(debugKeystorePath) : null
             
-            if (debugKeystoreFile.exists()) {
+            if (debugKeystoreFile != null && debugKeystoreFile.exists()) {
                 storeFile debugKeystoreFile
                 storePassword "android"
                 keyAlias "androiddebugkey"
@@ -43,7 +44,7 @@ android {
             } else {
                 // Fallback: Let the build fail with a clear error message
                 throw new GradleException(
-                    "Debug keystore not found at: ${debugKeystorePath}\n" +
+                    "Debug keystore not found at: ${debugKeystorePath ?: 'unknown path'}\n" +
                     "Please configure a proper release signing configuration in build.gradle"
                 )
             }
