@@ -16,10 +16,20 @@ An Android application that automatically collects all device information needed
 - 🔒 **[Security](SECURITY_SUMMARY.md)** - Security audit results
 - 📄 **[Sample Output](SAMPLE_OUTPUT.txt)** - Example output file
 
+## ❤️ Support Development
+
+If you find this app helpful, consider supporting the developer:
+
+- **PayPal**: kaynikko88@gmail.com
+- **CashApp**: $Nikko6888
+
+Your support helps maintain and improve this app!
+
 ## Features
 
 - 📱 Automatically collects comprehensive device information
 - 💾 Saves data to `sdcard/Download/twrp-builder-{codename}.txt`
+- 🔐 **NEW**: Enhanced root and security status detection
 - 🔍 Gathers all required information for TWRP Builder:
   - Device codename, brand, model, manufacturer
   - Android version and API level
@@ -28,6 +38,10 @@ An Android application that automatically collects all device information needed
   - Kernel version
   - Build fingerprint
   - Hardware information
+  - **Root access status**
+  - **SELinux status**
+  - **Bootloader lock status**
+  - **System partition mount status**
   - And much more!
 
 ## What is this for?
@@ -81,6 +95,109 @@ cd Hovatek--Online--TWRP--Builder-help
 5. Click "Build" → "Build Bundle(s) / APK(s)" → "Build APK(s)"
 6. The APK will be in `app/build/outputs/apk/`
 
+### Building a Signed Release APK
+
+To create a production-ready signed APK:
+
+#### Step 1: Generate a Keystore
+
+```bash
+keytool -genkey -v -keystore release-keystore.jks \
+  -keyalg RSA -keysize 2048 -validity 10000 \
+  -alias my-key-alias
+```
+
+This will prompt you for:
+- Keystore password
+- Key password
+- Your name and organization details
+
+**Important**: Keep your keystore file and passwords safe! You'll need them for all future updates.
+
+#### Step 2: Configure the Keystore
+
+1. Place your `release-keystore.jks` file in the `app/` directory
+2. Choose one of the following configuration methods:
+
+**Option A: Using gradle.properties (Recommended)**
+
+Create or edit `gradle.properties` in the project root and add:
+
+```properties
+KEYSTORE_FILE=release-keystore.jks
+KEYSTORE_PASSWORD=your-store-password
+KEY_ALIAS=your-key-alias
+KEY_PASSWORD=your-key-password
+```
+
+Add `gradle.properties` to `.gitignore` to prevent committing credentials!
+
+**Option B: Using Environment Variables**
+
+Set the following environment variables before building:
+
+```bash
+export KEYSTORE_FILE=release-keystore.jks
+export KEYSTORE_PASSWORD=your-store-password
+export KEY_ALIAS=your-key-alias
+export KEY_PASSWORD=your-key-password
+```
+
+The build.gradle is already configured to use these environment variables or gradle.properties automatically.
+
+**Option C: Direct Modification (Not Recommended)**
+
+If you prefer, you can directly modify `app/build.gradle`, but be careful not to commit real credentials:
+
+```gradle
+signingConfigs {
+    release {
+        storeFile file("release-keystore.jks")
+        storePassword "your-store-password"
+        keyAlias "your-key-alias"
+        keyPassword "your-key-password"
+    }
+}
+```
+
+**Security Warning**: Never commit real keystore credentials to source control! Always use gradle.properties (with .gitignore) or environment variables for production builds.
+
+#### Step 3: Enable Signing in Build Configuration
+
+In `app/build.gradle`, uncomment the signing configuration line:
+
+```gradle
+buildTypes {
+    release {
+        signingConfig signingConfigs.release  // Uncomment this line
+        minifyEnabled true
+        shrinkResources true
+        proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+    }
+}
+```
+
+#### Step 4: Build the Signed Release APK
+
+```bash
+./gradlew assembleRelease
+```
+
+The signed APK will be at: `app/build/outputs/apk/release/app-release.apk`
+
+#### ProGuard Configuration
+
+The release build uses ProGuard to:
+- Shrink the APK size by removing unused code
+- Obfuscate code for security
+- Optimize bytecode for better performance
+
+ProGuard rules are configured in `app/proguard-rules.pro`. The default configuration:
+- Keeps all app classes and methods
+- Preserves AndroidX and Material Design components
+- Removes debug logging statements
+- Optimizes the final APK
+
 ### Installing the APK
 
 1. Transfer the APK to your Android device
@@ -96,8 +213,27 @@ The app collects the following information:
 - **Architecture Info**: Supported ABIs, Primary ABI, CPU Architecture
 - **Screen Info**: Resolution, Density, Density Scale
 - **Kernel Info**: Kernel Version, Detailed Kernel Information
+- **Touch Driver Info**: Touch driver detection from multiple sources
+- **Root & Security Status** *(NEW)*:
+  - Root availability (su binary detection)
+  - Root access granted status
+  - SELinux status (Enforcing/Permissive)
+  - Bootloader lock status
+  - System partition mount status (read-only/read-write)
 - **Build Info**: Fingerprint, Display, Bootloader, Radio Version
 - **Additional Properties**: Host, User, Build Time
+
+### Root Detection Details
+
+The app performs comprehensive root and security checks:
+
+1. **Root Available**: Checks for `su` binary in common system paths
+2. **Root Access Granted**: Attempts to execute a root command to verify actual root access
+3. **SELinux Status**: Reads SELinux enforcement status from system files
+4. **Bootloader Status**: Detects if the bootloader is locked or unlocked via system properties
+5. **System Partition Status**: Checks if the system partition is mounted as read-only or read-write
+
+These checks help TWRP builders understand the security state of the device, which can be important for recovery development.
 
 ## Permissions
 

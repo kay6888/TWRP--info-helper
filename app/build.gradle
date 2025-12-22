@@ -10,14 +10,47 @@ android {
         applicationId "com.hovatek.twrpinfo"
         minSdk 21
         targetSdk 34
-        versionCode 1
-        versionName "1.0"
+        versionCode 2
+        versionName "2.0"
+    }
+
+    // Signing configuration for release builds
+    // To create a signed release APK:
+    // 1. Generate a keystore using: keytool -genkey -v -keystore my-release-key.jks -keyalg RSA -keysize 2048 -validity 10000 -alias my-key-alias
+    // 2. Place the keystore file in the app directory (name it release-keystore.jks)
+    // 3. Create a gradle.properties file (or use environment variables) with your keystore information:
+    //    KEYSTORE_FILE=release-keystore.jks
+    //    KEYSTORE_PASSWORD=your-store-password
+    //    KEY_ALIAS=your-key-alias
+    //    KEY_PASSWORD=your-key-password
+    // 4. Build with: ./gradlew assembleRelease
+    signingConfigs {
+        release {
+            // SECURITY WARNING: NEVER commit real credentials to source control!
+            // The configuration below checks for environment variables or gradle.properties
+            def keystoreFile = System.getenv("KEYSTORE_FILE") ?: project.findProperty("KEYSTORE_FILE") ?: "release-keystore.jks"
+            def keystorePassword = System.getenv("KEYSTORE_PASSWORD") ?: project.findProperty("KEYSTORE_PASSWORD") ?: "your-store-password"
+            def keyAliasName = System.getenv("KEY_ALIAS") ?: project.findProperty("KEY_ALIAS") ?: "your-key-alias"
+            def keyPass = System.getenv("KEY_PASSWORD") ?: project.findProperty("KEY_PASSWORD") ?: "your-key-password"
+            
+            storeFile file(keystoreFile)
+            storePassword keystorePassword
+            keyAlias keyAliasName
+            keyPassword keyPass
+        }
     }
 
     buildTypes {
         release {
-            minifyEnabled false
+            // Uncomment the signingConfig line below when your keystore is ready
+            // signingConfig signingConfigs.release
+            
+            minifyEnabled true
+            shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+        debug {
+            minifyEnabled false
         }
     }
 

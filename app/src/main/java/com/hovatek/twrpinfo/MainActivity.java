@@ -1,6 +1,8 @@
 package com.hovatek.twrpinfo;
 
 import android.Manifest;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.Build;
@@ -11,6 +13,7 @@ import android.view.Display;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -43,6 +46,8 @@ public class MainActivity extends AppCompatActivity {
     private Button collectButton;
     private Button saveButton;
     private SearchView searchView;
+    private LinearLayout paypalButton;
+    private LinearLayout cashappButton;
     private String deviceInfo = "";
     private String fullDeviceInfo = "";
 
@@ -55,8 +60,11 @@ public class MainActivity extends AppCompatActivity {
         collectButton = findViewById(R.id.collectButton);
         saveButton = findViewById(R.id.saveButton);
         searchView = findViewById(R.id.searchView);
+        paypalButton = findViewById(R.id.paypalButton);
+        cashappButton = findViewById(R.id.cashappButton);
 
         setupSearch();
+        setupDonationButtons();
 
         collectButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -149,6 +157,15 @@ public class MainActivity extends AppCompatActivity {
             info.append("Touch driver information not available.\n");
             info.append("Note: Root access may be required to detect touch driver.\n");
         }
+        info.append("\n");
+        
+        // Root & Security Status
+        info.append("--- ROOT & SECURITY STATUS ---\n");
+        info.append("Root Available: ").append(isRootAvailable() ? "Yes" : "No").append("\n");
+        info.append("Root Access Granted: ").append(isRootGranted() ? "Yes" : "No").append("\n");
+        info.append("SELinux Status: ").append(getSELinuxStatus()).append("\n");
+        info.append("Bootloader Status: ").append(getBootloaderStatus()).append("\n");
+        info.append("System Partition: ").append(getSystemPartitionStatus()).append("\n");
         info.append("\n");
         
         // Build Fingerprint
@@ -281,6 +298,29 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             }
         });
+    }
+
+    private void setupDonationButtons() {
+        paypalButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                copyToClipboard(getString(R.string.paypal_email), "PayPal Email");
+            }
+        });
+
+        cashappButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                copyToClipboard(getString(R.string.cashapp_handle), "CashApp Handle");
+            }
+        });
+    }
+
+    private void copyToClipboard(String text, String label) {
+        ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+        ClipData clip = ClipData.newPlainText(label, text);
+        clipboard.setPrimaryClip(clip);
+        Toast.makeText(this, text + " " + getString(R.string.donation_copied), Toast.LENGTH_SHORT).show();
     }
 
     private void filterDeviceInfo(String query) {
@@ -459,6 +499,156 @@ public class MainActivity extends AppCompatActivity {
             if (process != null) {
                 process.destroy();
             }
+        }
+    }
+
+    // Root detection methods
+    // NOTE: These methods perform passive detection only. They do not modify the system
+    // or grant root access. The isRootGranted() method attempts to execute a harmless
+    // command to verify if root access would be available, but does not request or use
+    // elevated privileges for any actual operations.
+    
+    private boolean isRootAvailable() {
+        // Check for su binary in common paths
+        String[] suPaths = {
+            "/system/bin/su",
+            "/system/xbin/su",
+            "/system/sbin/su",
+            "/sbin/su",
+            "/vendor/bin/su",
+            "/su/bin/su",
+            "/data/local/xbin/su",
+            "/data/local/bin/su",
+            "/system/sd/xbin/su",
+            "/system/bin/failsafe/su",
+            "/data/local/su"
+        };
+        
+        for (String path : suPaths) {
+            File file = new File(path);
+            if (file.exists()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean isRootGranted() {
+        // This method attempts to execute a harmless 'id' command with su to check
+        // if root access would be granted. It does not modify anything on the system.
+        // If root is available, the user may see a root permission prompt from their
+        // root management app (SuperSU, Magisk, etc.)
+        Process process = null;
+        try {
+            process = Runtime.getRuntime().exec("su -c id");
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+                String output = reader.readLine();
+                
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    process.waitFor(2, java.util.concurrent.TimeUnit.SECONDS);
+                } else {
+                    process.waitFor();
+                }
+                
+                return output != null && output.toLowerCase(Locale.ROOT).contains("uid=0");
+            }
+        } catch (Exception e) {
+            return false;
+        } finally {
+            if (process != null) {
+                process.destroy();
+            }
+        }
+    }
+
+    private String getSELinuxStatus() {
+        try {
+            // Try reading SELinux status file
+            String selinuxFile = readFile("/sys/fs/selinux/enforce");
+            if (selinuxFile != null && !selinuxFile.isEmpty()) {
+                return selinuxFile.trim().equals("1") ? "Enforcing" : "Permissive";
+            }
+            
+            // Try getenforce command
+            String result = executeCommand("getenforce");
+            if (result != null && !result.isEmpty()) {
+                return result.trim();
+            }
+            
+            return "Unknown";
+        } catch (Exception e) {
+            return "Unknown";
+        }
+    }
+
+    private String getBootloaderStatus() {
+        try {
+            // Check via getprop
+            String locked = executeCommand("getprop ro.boot.verifiedbootstate");
+            if (locked != null && !locked.isEmpty()) {
+                locked = locked.trim();
+                if (locked.equalsIgnoreCase("green")) {
+                    return "Locked";
+                } else if (locked.equalsIgnoreCase("orange") || locked.equalsIgnoreCase("yellow")) {
+                    return "Unlocked";
+                }
+            }
+            
+            // Alternative property
+            String bootloaderLocked = executeCommand("getprop ro.boot.flash.locked");
+            if (bootloaderLocked != null && !bootloaderLocked.isEmpty()) {
+                bootloaderLocked = bootloaderLocked.trim();
+                return bootloaderLocked.equals("1") ? "Locked" : "Unlocked";
+            }
+            
+            // Check if OEM unlocking is allowed
+            String oemUnlock = executeCommand("getprop sys.oem_unlock_allowed");
+            if (oemUnlock != null && !oemUnlock.isEmpty()) {
+                oemUnlock = oemUnlock.trim();
+                return oemUnlock.equals("1") ? "Unlockable/Unlocked" : "Locked";
+            }
+            
+            return "Unknown";
+        } catch (Exception e) {
+            return "Unknown";
+        }
+    }
+
+    private String getSystemPartitionStatus() {
+        try {
+            // Check /proc/mounts for system partition
+            String mounts = readFile("/proc/mounts");
+            if (mounts != null && !mounts.isEmpty()) {
+                String[] lines = mounts.split("\n");
+                for (String line : lines) {
+                    if (line.contains("/system ") || line.contains(" /system ")) {
+                        if (line.contains("ro,") || line.contains(" ro ")) {
+                            return "Read-Only (ro)";
+                        } else if (line.contains("rw,") || line.contains(" rw ")) {
+                            return "Read-Write (rw)";
+                        }
+                    }
+                }
+            }
+            
+            // Alternative: Try mount command
+            String mountOutput = executeCommand("mount");
+            if (mountOutput != null && !mountOutput.isEmpty()) {
+                String[] lines = mountOutput.split("\n");
+                for (String line : lines) {
+                    if (line.contains("/system")) {
+                        if (line.contains(" ro,") || line.contains(" ro ")) {
+                            return "Read-Only (ro)";
+                        } else if (line.contains(" rw,") || line.contains(" rw ")) {
+                            return "Read-Write (rw)";
+                        }
+                    }
+                }
+            }
+            
+            return "Unknown";
+        } catch (Exception e) {
+            return "Unknown";
         }
     }
 }
