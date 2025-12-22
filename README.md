@@ -28,7 +28,16 @@ An Android application that automatically collects all device information needed
   - Kernel version
   - Build fingerprint
   - Hardware information
+  - **Root & Security Status** (NEW in v2.0):
+    - Root access detection
+    - Root permission status
+    - SELinux status
+    - Bootloader lock status
+    - System partition mount status
   - And much more!
+- 💝 **Support Development** (NEW in v2.0):
+  - Easy donation options via PayPal and CashApp
+  - One-tap copy of payment information
 
 ## What is this for?
 
@@ -47,7 +56,7 @@ This app helps you gather all the technical information about your Android devic
 
 ### Prerequisites
 
-- Android SDK (API level 33 or higher)
+- Android SDK (API level 34 or higher)
 - Java Development Kit (JDK) 8 or higher
 - Gradle 7.4.2 or higher
 
@@ -63,13 +72,13 @@ cd Hovatek--Online--TWRP--Builder-help
 # Build the debug APK
 ./gradlew assembleDebug
 
-# Or build the release APK (unsigned)
+# Or build a signed release APK
 ./gradlew assembleRelease
 
 # The APK will be located at:
 # app/build/outputs/apk/debug/app-debug.apk
 # or
-# app/build/outputs/apk/release/app-release-unsigned.apk
+# app/build/outputs/apk/release/app-release.apk
 ```
 
 #### Option 2: Using Android Studio
@@ -80,6 +89,38 @@ cd Hovatek--Online--TWRP--Builder-help
 4. Wait for Gradle to sync
 5. Click "Build" → "Build Bundle(s) / APK(s)" → "Build APK(s)"
 6. The APK will be in `app/build/outputs/apk/`
+
+### Building a Signed Release APK
+
+The app is configured to build signed releases. By default, it uses the Android debug keystore for convenience. To create a production-signed APK:
+
+1. **Generate a release keystore**:
+   ```bash
+   keytool -genkey -v -keystore my-release-key.jks -keyalg RSA -keysize 2048 -validity 10000 -alias my-key-alias
+   ```
+
+2. **Place the keystore file** in the `app/` directory
+
+3. **Update `app/build.gradle`** signing configuration:
+   ```gradle
+   signingConfigs {
+       release {
+           storeFile file("my-release-key.jks")
+           storePassword "your-store-password"
+           keyAlias "my-key-alias"
+           keyPassword "your-key-password"
+       }
+   }
+   ```
+
+4. **Build the release APK**:
+   ```bash
+   ./gradlew assembleRelease
+   ```
+
+5. The signed APK will be at: `app/build/outputs/apk/release/app-release.apk`
+
+**Security Note**: Never commit your keystore file or passwords to version control. Consider using environment variables or `gradle.properties` for sensitive information.
 
 ### Installing the APK
 
@@ -96,8 +137,16 @@ The app collects the following information:
 - **Architecture Info**: Supported ABIs, Primary ABI, CPU Architecture
 - **Screen Info**: Resolution, Density, Density Scale
 - **Kernel Info**: Kernel Version, Detailed Kernel Information
+- **Root & Security Status** (NEW in v2.0):
+  - Root availability (su binary detection)
+  - Root permission status
+  - SELinux status (enforcing/permissive)
+  - Bootloader lock status
+  - System partition mount status (ro/rw)
+  - SafetyNet status note
 - **Build Info**: Fingerprint, Display, Bootloader, Radio Version
 - **Additional Properties**: Host, User, Build Time
+- **Touch Driver Info**: Detected touch driver information (if available)
 
 ## Permissions
 
@@ -109,8 +158,17 @@ The app requires storage permissions to save the device information file:
 ## Compatibility
 
 - Minimum Android Version: 5.0 (Lollipop, API 21)
-- Target Android Version: 13 (API 33)
+- Target Android Version: 14 (API 34)
 - Supports all Android architectures (ARM, ARM64, x86, x86_64)
+
+## 💝 Support Development
+
+If you find this app helpful, please consider supporting the developer:
+
+- **PayPal**: kaynikko88@gmail.com
+- **CashApp**: $Nikko6888
+
+Tap on the donation options in the app to easily copy the payment information!
 
 ## Output File Format
 

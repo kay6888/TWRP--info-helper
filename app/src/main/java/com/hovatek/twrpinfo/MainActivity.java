@@ -1,6 +1,8 @@
 package com.hovatek.twrpinfo;
 
 import android.Manifest;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.Build;
@@ -11,6 +13,7 @@ import android.view.Display;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -43,6 +46,8 @@ public class MainActivity extends AppCompatActivity {
     private Button collectButton;
     private Button saveButton;
     private SearchView searchView;
+    private LinearLayout paypalButton;
+    private LinearLayout cashappButton;
     private String deviceInfo = "";
     private String fullDeviceInfo = "";
 
@@ -55,8 +60,11 @@ public class MainActivity extends AppCompatActivity {
         collectButton = findViewById(R.id.collectButton);
         saveButton = findViewById(R.id.saveButton);
         searchView = findViewById(R.id.searchView);
+        paypalButton = findViewById(R.id.paypalButton);
+        cashappButton = findViewById(R.id.cashappButton);
 
         setupSearch();
+        setupDonationButtons();
 
         collectButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -78,6 +86,158 @@ public class MainActivity extends AppCompatActivity {
 
         // Auto-collect on start
         collectDeviceInfo();
+    }
+
+    private void setupDonationButtons() {
+        paypalButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                copyToClipboard(getString(R.string.paypal_email));
+            }
+        });
+
+        cashappButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                copyToClipboard(getString(R.string.cashapp_id));
+            }
+        });
+    }
+
+    private void copyToClipboard(String text) {
+        ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+        ClipData clip = ClipData.newPlainText("Payment Info", text);
+        clipboard.setPrimaryClip(clip);
+        Toast.makeText(this, getString(R.string.donation_copied), Toast.LENGTH_SHORT).show();
+    }
+
+    private boolean isRootAvailable() {
+        String[] paths = {
+            "/system/app/Superuser.apk",
+            "/sbin/su",
+            "/system/bin/su",
+            "/system/xbin/su",
+            "/data/local/xbin/su",
+            "/data/local/bin/su",
+            "/system/sd/xbin/su",
+            "/system/bin/failsafe/su",
+            "/data/local/su",
+            "/su/bin/su"
+        };
+        
+        for (String path : paths) {
+            if (new File(path).exists()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean isRootGranted() {
+        Process process = null;
+        try {
+            process = Runtime.getRuntime().exec("su -c id");
+            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            String output = reader.readLine();
+            reader.close();
+            
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                process.waitFor(2, java.util.concurrent.TimeUnit.SECONDS);
+            } else {
+                process.waitFor();
+            }
+            
+            return output != null && output.toLowerCase(Locale.ROOT).contains("uid=0");
+        } catch (Exception e) {
+            return false;
+        } finally {
+            if (process != null) {
+                process.destroy();
+            }
+        }
+    }
+
+    private String getSELinuxStatus() {
+        try {
+            Process process = Runtime.getRuntime().exec("getenforce");
+            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            String status = reader.readLine();
+            reader.close();
+            
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                process.waitFor(2, java.util.concurrent.TimeUnit.SECONDS);
+            } else {
+                process.waitFor();
+            }
+            
+            return status != null ? status : "Unknown";
+        } catch (Exception e) {
+            return "Unable to determine";
+        }
+    }
+
+    private String getBootloaderStatus() {
+        String[] bootloaderPaths = {
+            "/sys/class/sec/sec_debug/boot_verifiedboot",
+            "/sys/devices/soc0/oem_sec_boot_enabled",
+            "/proc/cmdline"
+        };
+        
+        for (String path : bootloaderPaths) {
+            String content = readFile(path);
+            if (content != null && !content.isEmpty()) {
+                if (content.toLowerCase(Locale.ROOT).contains("locked") || 
+                    content.contains("1")) {
+                    return "Locked (detected from: " + path + ")";
+                } else if (content.toLowerCase(Locale.ROOT).contains("unlocked") || 
+                           content.contains("0")) {
+                    return "Unlocked (detected from: " + path + ")";
+                }
+            }
+        }
+        
+        // Try to detect via getprop
+        String output = executeCommand("getprop ro.boot.flash.locked");
+        if (output != null && !output.isEmpty()) {
+            if (output.trim().equals("1")) {
+                return "Locked (via getprop)";
+            } else if (output.trim().equals("0")) {
+                return "Unlocked (via getprop)";
+            }
+        }
+        
+        return "Unable to determine";
+    }
+
+    private String getSystemPartitionMountStatus() {
+        try {
+            Process process = Runtime.getRuntime().exec("mount");
+            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            String line;
+            
+            while ((line = reader.readLine()) != null) {
+                if (line.contains("/system")) {
+                    if (line.contains(" ro,") || line.contains(" ro ")) {
+                        reader.close();
+                        return "Read-only (ro)";
+                    } else if (line.contains(" rw,") || line.contains(" rw ")) {
+                        reader.close();
+                        return "Read-write (rw)";
+                    }
+                }
+            }
+            reader.close();
+            
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                process.waitFor(2, java.util.concurrent.TimeUnit.SECONDS);
+            } else {
+                process.waitFor();
+            }
+            
+            return "Unable to determine";
+        } catch (Exception e) {
+            return "Unable to determine";
+        }
     }
 
     private void collectDeviceInfo() {
@@ -138,6 +298,22 @@ public class MainActivity extends AppCompatActivity {
         if (kernelVersion != null && !kernelVersion.isEmpty()) {
             info.append("Detailed Kernel: ").append(kernelVersion).append("\n");
         }
+        info.append("\n");
+        
+        // Root & Security Status Information
+        info.append("--- ROOT & SECURITY STATUS ---\n");
+        boolean rootAvailable = isRootAvailable();
+        boolean rootGranted = isRootGranted();
+        String selinuxStatus = getSELinuxStatus();
+        String bootloaderStatus = getBootloaderStatus();
+        String systemMountStatus = getSystemPartitionMountStatus();
+        
+        info.append("Root Available: ").append(rootAvailable ? "Yes (su binary detected)" : "No").append("\n");
+        info.append("Root Permission: ").append(rootGranted ? "Granted" : "Not granted/denied").append("\n");
+        info.append("SELinux Status: ").append(selinuxStatus).append("\n");
+        info.append("Bootloader Status: ").append(bootloaderStatus).append("\n");
+        info.append("System Partition: ").append(systemMountStatus).append("\n");
+        info.append("SafetyNet Status: Check with SafetyNet app (not detectable programmatically)\n");
         info.append("\n");
         
         // Touch Driver Information
