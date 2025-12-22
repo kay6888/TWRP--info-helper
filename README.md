@@ -10,11 +10,22 @@ An Android application that automatically collects all device information needed
 
 ## 🌟 Quick Links
 
+### App Documentation
 - 📖 **[Quick Start Guide](QUICK_START.md)** - For non-technical users
 - 🔨 **[Build Instructions](BUILD_INSTRUCTIONS.md)** - Detailed build guide
 - 📋 **[Features](FEATURES.md)** - Complete feature list
 - 🔒 **[Security](SECURITY_SUMMARY.md)** - Security audit results
 - 📄 **[Sample Output](SAMPLE_OUTPUT.txt)** - Example output file
+
+### TWRP Building Documentation
+- 📚 **[Complete TWRP Building Guide](docs/TWRP_BUILDING_GUIDE.md)** - Comprehensive guide
+- 🔍 **[Device Info Extraction](docs/DEVICE_INFO_EXTRACTION.md)** - Extract device information
+- ⚙️ **[Kernel Information Guide](docs/KERNEL_INFO.md)** - Kernel extraction and analysis
+- 📝 **[Recovery Fstab Guide](docs/RECOVERY_FSTAB.md)** - Partition configuration
+- 🌐 **[Hovatek Builder Guide](docs/HOVATEK_BUILDER_GUIDE.md)** - Using online TWRP builder
+- 🔧 **[Troubleshooting Guide](docs/TROUBLESHOOTING.md)** - Common issues and solutions
+- 🛠️ **[Tools and Resources](docs/TOOLS_AND_RESOURCES.md)** - Essential tools
+- ⚡ **[Quick Reference](docs/QUICK_REFERENCE.md)** - Command cheat sheet
 
 ## Features
 
@@ -33,6 +44,47 @@ An Android application that automatically collects all device information needed
 ## What is this for?
 
 This app helps you gather all the technical information about your Android device that is required when using the Hovatek Online TWRP Builder to create a custom TWRP recovery for your device.
+
+## 📖 TWRP Building Resources
+
+This repository now includes comprehensive documentation for building TWRP recovery:
+
+### 📚 Complete Documentation Suite
+- **[TWRP Building Guide](docs/TWRP_BUILDING_GUIDE.md)** - Complete guide to building TWRP from scratch
+- **[Device Info Extraction](docs/DEVICE_INFO_EXTRACTION.md)** - How to extract all necessary device information
+- **[Kernel Information](docs/KERNEL_INFO.md)** - Extract and analyze boot images and kernels
+- **[Recovery Fstab](docs/RECOVERY_FSTAB.md)** - Configure partition mounting for TWRP
+- **[Hovatek Builder Guide](docs/HOVATEK_BUILDER_GUIDE.md)** - Step-by-step guide for using the online builder
+- **[Troubleshooting](docs/TROUBLESHOOTING.md)** - Solutions to common build and boot issues
+- **[Tools & Resources](docs/TOOLS_AND_RESOURCES.md)** - Essential tools and community resources
+- **[Quick Reference](docs/QUICK_REFERENCE.md)** - Command cheat sheet and quick lookup
+
+### 🛠️ Automation Tools
+- **[Device Info Script](scripts/extract_device_info.sh)** - Automated ADB-based device information extraction
+- Run `./scripts/extract_device_info.sh` to automatically gather all device info via ADB
+
+### 📂 Example Device Tree
+- **[Sample Device Tree](examples/device_tree_sample/)** - Complete example with all required files
+- Includes: `BoardConfig.mk`, `device.mk`, `recovery.fstab`, and more
+- Fully commented to explain every configuration option
+
+### 🚀 Getting Started with TWRP Building
+
+1. **Collect Device Information**:
+   - Use this app on your device, OR
+   - Run `./scripts/extract_device_info.sh` with ADB
+
+2. **Learn the Basics**:
+   - Read [TWRP Building Guide](docs/TWRP_BUILDING_GUIDE.md)
+   - Review [Device Info Extraction](docs/DEVICE_INFO_EXTRACTION.md)
+
+3. **Choose Your Approach**:
+   - **Online Building**: Follow [Hovatek Builder Guide](docs/HOVATEK_BUILDER_GUIDE.md)
+   - **Local Building**: Follow the complete [TWRP Building Guide](docs/TWRP_BUILDING_GUIDE.md)
+
+4. **Use Example Files**:
+   - Copy and customize [examples/device_tree_sample/](examples/device_tree_sample/)
+   - See included README for detailed instructions
 
 ## How to Use
 
