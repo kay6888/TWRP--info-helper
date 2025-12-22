@@ -437,19 +437,28 @@ public class MainActivity extends AppCompatActivity {
 
     private String executeCommand(String command) {
         StringBuilder output = new StringBuilder();
+        Process process = null;
         try {
-            Process process = Runtime.getRuntime().exec(command);
+            process = Runtime.getRuntime().exec(command);
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
                 String line;
                 while ((line = reader.readLine()) != null) {
                     output.append(line).append("\n");
                 }
             }
-            process.waitFor();
-            process.destroy();
+            // Wait for process with timeout to prevent hanging
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                process.waitFor(5, java.util.concurrent.TimeUnit.SECONDS);
+            } else {
+                process.waitFor();
+            }
             return output.toString();
         } catch (Exception e) {
             return null;
+        } finally {
+            if (process != null) {
+                process.destroy();
+            }
         }
     }
 }
