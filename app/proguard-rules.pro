@@ -1,10 +1,10 @@
 # Add project specific ProGuard rules here.
 
 # Keep MainActivity and its methods
--keep class com.hovatek.twrpinfo.MainActivity { *; }
+-keep class com.pasta.twrp.MainActivity { *; }
 
 # Keep all classes in the package
--keep class com.hovatek.twrpinfo.** { *; }
+-keep class com.pasta.twrp.** { *; }
 
 # AndroidX
 -keep class androidx.** { *; }

@@ -1,4 +1,4 @@
-package com.hovatek.twrpinfo;
+package com.pasta.twrp;
 
 import android.Manifest;
 import android.content.ClipData;
