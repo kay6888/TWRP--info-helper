@@ -46,6 +46,6 @@
         android:text="Theme changes will be applied immediately."
         android:textSize="12sp"
         android:paddingTop="16dp"
-        android:textColor="#666666" />
+        android:textColor="@color/text_secondary" />
 
 </LinearLayout>

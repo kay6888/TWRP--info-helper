@@ -25,19 +25,19 @@ public class SettingsActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+        // Initialize preferences before applying theme
+        preferences = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
         
-        // Apply theme before setting content view
+        // Apply theme before calling super.onCreate()
         applyTheme();
         
+        super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
         
         // Enable back button in action bar
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
-
-        preferences = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
         
         themeRadioGroup = findViewById(R.id.themeRadioGroup);
         radioLight = findViewById(R.id.radioLight);

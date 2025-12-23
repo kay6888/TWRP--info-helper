@@ -7,14 +7,10 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.provider.MediaStore;
-import android.widget.Toast;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
 
 public class FileSaveHelper {
 
@@ -26,7 +22,6 @@ public class FileSaveHelper {
     public static void saveDeviceInfo(Context context, String deviceInfo, String codename, SaveCallback callback) {
         try {
             String fileName = "twrp-builder-" + codename + ".txt";
-            String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(new Date());
             
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 // Android 10+ - use MediaStore API

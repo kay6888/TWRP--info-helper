@@ -3,24 +3,20 @@ package com.pasta.twrp;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.os.AsyncTask;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
-
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class DeviceSearchService {
 
     private static final String TAG = "DeviceSearchService";
-    // Using a simple device database API - you can replace with a better one
-    private static final String API_URL = "https://api.github.com/repos/androidtrackers/certified-android-devices/contents/by_device.json";
+    private static final ExecutorService executorService = Executors.newSingleThreadExecutor();
+    private static final Handler mainHandler = new Handler(Looper.getMainLooper());
     
     private static Map<String, String> cache = new HashMap<>();
 
@@ -43,7 +39,7 @@ public class DeviceSearchService {
         }
 
         // Perform search in background
-        new SearchTask(query, callback).execute();
+        executorService.execute(new SearchTask(query, callback));
     }
 
     private static boolean isNetworkAvailable(Context context) {
@@ -53,10 +49,9 @@ public class DeviceSearchService {
         return activeNetworkInfo != null && activeNetworkInfo.isConnected();
     }
 
-    private static class SearchTask extends AsyncTask<Void, Void, String> {
+    private static class SearchTask implements Runnable {
         private final String query;
         private final SearchCallback callback;
-        private String error = null;
 
         SearchTask(String query, SearchCallback callback) {
             this.query = query;
@@ -64,29 +59,33 @@ public class DeviceSearchService {
         }
 
         @Override
-        protected String doInBackground(Void... voids) {
+        public void run() {
             try {
                 // Create mock device info for demonstration
                 // In a real implementation, you would fetch from an actual API
-                String deviceInfo = createMockDeviceInfo(query);
+                final String deviceInfo = createMockDeviceInfo(query);
                 
                 // Cache the result
                 cache.put(query.toLowerCase().trim(), deviceInfo);
                 
-                return deviceInfo;
+                // Post result to main thread
+                mainHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        callback.onSearchComplete(deviceInfo);
+                    }
+                });
             } catch (Exception e) {
-                error = e.getMessage();
+                final String error = e.getMessage();
                 Log.e(TAG, "Search error", e);
-                return null;
-            }
-        }
-
-        @Override
-        protected void onPostExecute(String result) {
-            if (result != null) {
-                callback.onSearchComplete(result);
-            } else {
-                callback.onSearchError(error != null ? error : "Unknown error occurred");
+                
+                // Post error to main thread
+                mainHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        callback.onSearchError(error != null ? error : "Unknown error occurred");
+                    }
+                });
             }
         }
 
