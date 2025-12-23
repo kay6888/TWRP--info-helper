@@ -4,25 +4,33 @@ import android.Manifest;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.DisplayMetrics;
 import android.view.Display;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.SearchView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+
+import com.google.android.material.tabs.TabLayout;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -41,28 +49,46 @@ public class MainActivity extends AppCompatActivity {
     private static final String[] TOUCH_DRIVER_VENDORS = {
         "touch", "synaptics", "focaltech", "goodix", "atmel", "cypress", "ft", "gt", "touchscreen", "ts"
     };
+    private static final String PREFS_NAME = "TWRPInfoPrefs";
+    private static final String THEME_KEY = "theme_mode";
     
     private TextView infoTextView;
     private Button collectButton;
     private Button saveButton;
-    private SearchView searchView;
+    private Button searchButton;
+    private SearchView onlineSearchView;
+    private SearchView filterView;
     private LinearLayout paypalButton;
     private LinearLayout cashappButton;
+    private LinearLayout searchLayout;
+    private TabLayout tabLayout;
+    private ProgressBar progressBar;
     private String deviceInfo = "";
     private String fullDeviceInfo = "";
+    private String searchedDeviceInfo = "";
+    private boolean isSearchMode = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        // Apply theme before calling super.onCreate()
+        applyTheme();
+        
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
         infoTextView = findViewById(R.id.infoTextView);
         collectButton = findViewById(R.id.collectButton);
         saveButton = findViewById(R.id.saveButton);
-        searchView = findViewById(R.id.searchView);
+        searchButton = findViewById(R.id.searchButton);
+        onlineSearchView = findViewById(R.id.searchView);
+        filterView = findViewById(R.id.filterView);
         paypalButton = findViewById(R.id.paypalButton);
         cashappButton = findViewById(R.id.cashappButton);
+        searchLayout = findViewById(R.id.searchLayout);
+        tabLayout = findViewById(R.id.tabLayout);
+        progressBar = findViewById(R.id.progressBar);
 
+        setupTabs();
         setupSearch();
         setupDonationButtons();
 
@@ -83,9 +109,110 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+        
+        searchButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                performOnlineSearch();
+            }
+        });
 
         // Auto-collect on start
         collectDeviceInfo();
+    }
+    
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main_menu, menu);
+        return true;
+    }
+    
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (item.getItemId() == R.id.action_settings) {
+            Intent intent = new Intent(this, SettingsActivity.class);
+            startActivity(intent);
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+    
+    private void applyTheme() {
+        SharedPreferences preferences = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        int themeMode = preferences.getInt(THEME_KEY, SettingsActivity.THEME_SYSTEM);
+        
+        switch (themeMode) {
+            case SettingsActivity.THEME_LIGHT:
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+                break;
+            case SettingsActivity.THEME_DARK:
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+                break;
+            case SettingsActivity.THEME_SYSTEM:
+            default:
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
+                break;
+        }
+    }
+    
+    private void setupTabs() {
+        tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+            @Override
+            public void onTabSelected(TabLayout.Tab tab) {
+                isSearchMode = tab.getPosition() == 1;
+                if (isSearchMode) {
+                    // Search tab selected
+                    searchLayout.setVisibility(View.VISIBLE);
+                    filterView.setVisibility(View.GONE);
+                    collectButton.setEnabled(false);
+                    if (!searchedDeviceInfo.isEmpty()) {
+                        infoTextView.setText(searchedDeviceInfo);
+                    } else {
+                        infoTextView.setText("Enter a device model or codename and tap 'Search Online' to find device information.");
+                    }
+                } else {
+                    // My Device tab selected
+                    searchLayout.setVisibility(View.GONE);
+                    filterView.setVisibility(View.VISIBLE);
+                    collectButton.setEnabled(true);
+                    infoTextView.setText(fullDeviceInfo);
+                }
+            }
+
+            @Override
+            public void onTabUnselected(TabLayout.Tab tab) {}
+
+            @Override
+            public void onTabReselected(TabLayout.Tab tab) {}
+        });
+    }
+    
+    private void performOnlineSearch() {
+        String query = onlineSearchView.getQuery().toString().trim();
+        if (query.isEmpty()) {
+            Toast.makeText(this, "Please enter a device model or codename", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        
+        progressBar.setVisibility(View.VISIBLE);
+        infoTextView.setText(getString(R.string.searching));
+        
+        DeviceSearchService.searchDevice(this, query, new DeviceSearchService.SearchCallback() {
+            @Override
+            public void onSearchComplete(String deviceInfo) {
+                progressBar.setVisibility(View.GONE);
+                searchedDeviceInfo = deviceInfo;
+                infoTextView.setText(deviceInfo);
+            }
+
+            @Override
+            public void onSearchError(String error) {
+                progressBar.setVisibility(View.GONE);
+                String errorMsg = getString(R.string.search_error) + ": " + error;
+                infoTextView.setText(errorMsg);
+                Toast.makeText(MainActivity.this, errorMsg, Toast.LENGTH_LONG).show();
+            }
+        });
     }
 
     private void collectDeviceInfo() {
@@ -255,37 +382,29 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void saveDeviceInfo() {
-        try {
-            String codename = Build.DEVICE;
-            String fileName = "twrp-builder-" + codename + ".txt";
-            
-            File downloadsDir;
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                // Android 10+ - use public Downloads directory
-                downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
-            } else {
-                // Android 9 and below
-                downloadsDir = new File(Environment.getExternalStorageDirectory(), "Download");
+        progressBar.setVisibility(View.VISIBLE);
+        Toast.makeText(this, R.string.save_verifying, Toast.LENGTH_SHORT).show();
+        
+        FileSaveHelper.saveDeviceInfo(this, deviceInfo, Build.DEVICE, new FileSaveHelper.SaveCallback() {
+            @Override
+            public void onSaveSuccess(String filePath, long fileSize) {
+                progressBar.setVisibility(View.GONE);
+                String successMsg = getString(R.string.save_success, filePath) + "\n" + 
+                                  getString(R.string.save_verified, String.valueOf(fileSize));
+                Toast.makeText(MainActivity.this, successMsg, Toast.LENGTH_LONG).show();
             }
-            
-            if (!downloadsDir.exists()) {
-                downloadsDir.mkdirs();
+
+            @Override
+            public void onSaveError(String error) {
+                progressBar.setVisibility(View.GONE);
+                String errorMsg = getString(R.string.save_error, error);
+                Toast.makeText(MainActivity.this, errorMsg, Toast.LENGTH_LONG).show();
             }
-            
-            File file = new File(downloadsDir, fileName);
-            FileOutputStream fos = new FileOutputStream(file);
-            fos.write(deviceInfo.getBytes());
-            fos.close();
-            
-            Toast.makeText(this, "Saved to: " + file.getAbsolutePath(), Toast.LENGTH_LONG).show();
-        } catch (Exception e) {
-            Toast.makeText(this, "Error saving file: " + e.getMessage(), Toast.LENGTH_LONG).show();
-            e.printStackTrace();
-        }
+        });
     }
 
     private void setupSearch() {
-        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+        filterView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
                 filterDeviceInfo(query);
@@ -296,6 +415,19 @@ public class MainActivity extends AppCompatActivity {
             public boolean onQueryTextChange(String newText) {
                 filterDeviceInfo(newText);
                 return true;
+            }
+        });
+        
+        onlineSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                performOnlineSearch();
+                return true;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                return false;
             }
         });
     }

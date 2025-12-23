@@ -16,4 +16,26 @@
     <string name="cashapp_label">CashApp</string>
     <string name="cashapp_handle">$Nikko6888</string>
     <string name="donation_copied">Copied to clipboard!</string>
+    
+    <!-- Settings strings -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_theme">Theme</string>
+    <string name="theme_light">Light Mode</string>
+    <string name="theme_dark">Dark Mode</string>
+    <string name="theme_system">System Default</string>
+    
+    <!-- Search strings -->
+    <string name="search_online">Search Online</string>
+    <string name="search_hint">Search device by model or codename...</string>
+    <string name="searching">Searching...</string>
+    <string name="search_error">Error searching for device</string>
+    <string name="no_network">No network connection</string>
+    <string name="tab_my_device">My Device</string>
+    <string name="tab_search">Search</string>
+    
+    <!-- Save strings -->
+    <string name="save_success">File saved successfully to:\n%s</string>
+    <string name="save_error">Error saving file: %s</string>
+    <string name="save_verifying">Verifying save...</string>
+    <string name="save_verified">File verified! Size: %s bytes</string>
 </resources>
