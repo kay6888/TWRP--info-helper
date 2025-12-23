@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="24dp">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/donation_header"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:textColor="#FF6200EE"
+        android:paddingBottom="8dp" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/donation_message"
+        android:textSize="14sp"
+        android:gravity="center"
+        android:paddingBottom="24dp" />
+
+    <!-- PayPal Button -->
+    <Button
+        android:id="@+id/dialogPaypalButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="12dp"
+        android:padding="16dp"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:textColor="#FFFFFF"
+        android:backgroundTint="#003087"
+        android:drawableStart="@android:drawable/ic_menu_send"
+        android:drawablePadding="8dp"
+        android:text="@string/paypal_button_text" />
+
+    <!-- CashApp Button -->
+    <Button
+        android:id="@+id/dialogCashappButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="12dp"
+        android:padding="16dp"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:textColor="#FFFFFF"
+        android:backgroundTint="#00D632"
+        android:drawableStart="@android:drawable/ic_menu_send"
+        android:drawablePadding="8dp"
+        android:text="@string/cashapp_button_text" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/donation_tap_to_copy"
+        android:textSize="12sp"
+        android:gravity="center"
+        android:textStyle="italic"
+        android:paddingTop="8dp" />
+
+</LinearLayout>

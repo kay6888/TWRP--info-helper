@@ -1,9 +1,11 @@
 package com.pasta.twrp;
 
 import android.Manifest;
+import android.app.AlertDialog;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -12,6 +14,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.util.DisplayMetrics;
 import android.view.Display;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -56,10 +59,9 @@ public class MainActivity extends AppCompatActivity {
     private Button collectButton;
     private Button saveButton;
     private Button searchButton;
+    private Button donationButton;
     private SearchView onlineSearchView;
     private SearchView filterView;
-    private LinearLayout paypalButton;
-    private LinearLayout cashappButton;
     private LinearLayout searchLayout;
     private TabLayout tabLayout;
     private ProgressBar progressBar;
@@ -80,17 +82,16 @@ public class MainActivity extends AppCompatActivity {
         collectButton = findViewById(R.id.collectButton);
         saveButton = findViewById(R.id.saveButton);
         searchButton = findViewById(R.id.searchButton);
+        donationButton = findViewById(R.id.donationButton);
         onlineSearchView = findViewById(R.id.searchView);
         filterView = findViewById(R.id.filterView);
-        paypalButton = findViewById(R.id.paypalButton);
-        cashappButton = findViewById(R.id.cashappButton);
         searchLayout = findViewById(R.id.searchLayout);
         tabLayout = findViewById(R.id.tabLayout);
         progressBar = findViewById(R.id.progressBar);
 
         setupTabs();
         setupSearch();
-        setupDonationButtons();
+        setupDonationButton();
 
         collectButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -432,20 +433,80 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void setupDonationButtons() {
-        paypalButton.setOnClickListener(new View.OnClickListener() {
+    private void setupDonationButton() {
+        donationButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                copyToClipboard(getString(R.string.paypal_email), "PayPal Email");
+                showDonationDialog();
             }
         });
-
-        cashappButton.setOnClickListener(new View.OnClickListener() {
+    }
+    
+    private void showDonationDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        LayoutInflater inflater = getLayoutInflater();
+        View dialogView = inflater.inflate(R.layout.dialog_donation, null);
+        builder.setView(dialogView);
+        
+        AlertDialog dialog = builder.create();
+        
+        Button paypalBtn = dialogView.findViewById(R.id.dialogPaypalButton);
+        Button cashappBtn = dialogView.findViewById(R.id.dialogCashappButton);
+        
+        paypalBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                copyToClipboard(getString(R.string.cashapp_handle), "CashApp Handle");
+                openPayPal();
+                dialog.dismiss();
             }
         });
+        
+        cashappBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                openCashApp();
+                dialog.dismiss();
+            }
+        });
+        
+        dialog.show();
+    }
+    
+    private void openPayPal() {
+        String paypalEmail = getString(R.string.paypal_email);
+        
+        try {
+            // Try to open PayPal app with payment link
+            Intent paypalIntent = new Intent(Intent.ACTION_VIEW);
+            paypalIntent.setData(android.net.Uri.parse("https://www.paypal.me/" + paypalEmail.replace("@gmail.com", "")));
+            startActivity(paypalIntent);
+        } catch (Exception e) {
+            // Fallback to web browser with PayPal URL
+            try {
+                Intent browserIntent = new Intent(Intent.ACTION_VIEW);
+                browserIntent.setData(android.net.Uri.parse("https://www.paypal.com/paypalme/" + paypalEmail.split("@")[0]));
+                startActivity(browserIntent);
+            } catch (Exception ex) {
+                // If all else fails, copy to clipboard
+                copyToClipboard(paypalEmail, "PayPal Email");
+                Toast.makeText(this, "PayPal not available. Email copied to clipboard.", Toast.LENGTH_LONG).show();
+            }
+        }
+    }
+    
+    private void openCashApp() {
+        String cashappHandle = getString(R.string.cashapp_handle);
+        
+        try {
+            // Try to open Cash App with cashtag
+            Intent cashappIntent = new Intent(Intent.ACTION_VIEW);
+            cashappIntent.setData(android.net.Uri.parse("https://cash.app/" + cashappHandle));
+            startActivity(cashappIntent);
+        } catch (Exception e) {
+            // If Cash App isn't installed, copy to clipboard
+            copyToClipboard(cashappHandle, "CashApp Handle");
+            Toast.makeText(this, "Cash App not available. Handle copied to clipboard.", Toast.LENGTH_LONG).show();
+        }
     }
 
     private void copyToClipboard(String text, String label) {

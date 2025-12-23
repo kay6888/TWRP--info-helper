@@ -11,11 +11,15 @@
     <!-- Donation strings -->
     <string name="donation_header">Support Development ❤️</string>
     <string name="donation_message">If you find this app helpful, consider supporting the developer:</string>
+    <string name="support_development">💝 Support Development</string>
     <string name="paypal_label">PayPal</string>
     <string name="paypal_email">kaynikko88@gmail.com</string>
+    <string name="paypal_button_text">PayPal - kaynikko88</string>
     <string name="cashapp_label">CashApp</string>
     <string name="cashapp_handle">$Nikko6888</string>
+    <string name="cashapp_button_text">CashApp - $Nikko6888</string>
     <string name="donation_copied">Copied to clipboard!</string>
+    <string name="donation_tap_to_copy">Tap a button to send a donation</string>
     
     <!-- Settings strings -->
     <string name="settings_title">Settings</string>
