@@ -1,4 +1,4 @@
-# TWRP Device Info Collector - Project Summary
+# TWRP Device Info Helper - Project Summary
 
 ## Project Completed Successfully ✅
 
@@ -103,7 +103,7 @@ The project is ready to build. Follow these steps:
 
 3. **Once You Have the APK**
    - Install it on your Android phone
-   - Open "TWRP Info Collector"
+   - Open "Twrp info helper"
    - Tap "Save to File"
    - Find the file at: `Download/twrp-builder-{your-device}.txt`
    - Use this info at: https://www.hovatek.com/twrpbuilder/
@@ -169,10 +169,10 @@ See `BUILD_INSTRUCTIONS.md` for detailed instructions.
 ## Technical Specifications
 
 ### Application Details
-- **Package Name**: `com.hovatek.twrpinfo`
-- **Version**: 1.0
+- **Package Name**: `com.pasta.twrp`
+- **Version**: 2.1 (versionCode 3)
 - **Min SDK**: 21 (Android 5.0 Lollipop)
-- **Target SDK**: 33 (Android 13)
+- **Target SDK**: 34 (Android 14)
 - **Language**: Java
 - **Build System**: Gradle 7.5
 - **Size**: ~500 KB (estimated)

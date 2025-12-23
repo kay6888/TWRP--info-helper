@@ -1,0 +1,5 @@
+# DO NOT COMMIT real secrets. For local builds, copy to ~/.gradle/gradle.properties or project root (gitignored)
+KEYSTORE_FILE=release-keystore.jks
+KEYSTORE_PASSWORD=your-store-password
+KEY_ALIAS=my-key-alias
+KEY_PASSWORD=your-key-password

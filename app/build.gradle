@@ -3,15 +3,15 @@ plugins {
 }
 
 android {
-    namespace 'com.hovatek.twrpinfo'
+    namespace 'com.pasta.twrp'
     compileSdk 34
 
     defaultConfig {
-        applicationId "com.hovatek.twrpinfo"
+        applicationId "com.pasta.twrp"
         minSdk 21
         targetSdk 34
-        versionCode 2
-        versionName "2.0"
+        versionCode 3
+        versionName "2.1"
     }
 
     // Signing configuration for release builds
@@ -29,9 +29,9 @@ android {
             // SECURITY WARNING: NEVER commit real credentials to source control!
             // The configuration below checks for environment variables or gradle.properties
             def keystoreFile = System.getenv("KEYSTORE_FILE") ?: project.findProperty("KEYSTORE_FILE") ?: "release-keystore.jks"
-            def keystorePassword = System.getenv("KEYSTORE_PASSWORD") ?: project.findProperty("KEYSTORE_PASSWORD") ?: "your-store-password"
-            def keyAliasName = System.getenv("KEY_ALIAS") ?: project.findProperty("KEY_ALIAS") ?: "your-key-alias"
-            def keyPass = System.getenv("KEY_PASSWORD") ?: project.findProperty("KEY_PASSWORD") ?: "your-key-password"
+            def keystorePassword = System.getenv("KEYSTORE_PASSWORD") ?: project.findProperty("KEYSTORE_PASSWORD") ?: "change-me"
+            def keyAliasName = System.getenv("KEY_ALIAS") ?: project.findProperty("KEY_ALIAS") ?: "my-key-alias"
+            def keyPass = System.getenv("KEY_PASSWORD") ?: project.findProperty("KEY_PASSWORD") ?: "change-me"
             
             storeFile file(keystoreFile)
             storePassword keystorePassword
@@ -42,9 +42,7 @@ android {
 
     buildTypes {
         release {
-            // Uncomment the signingConfig line below when your keystore is ready
-            // signingConfig signingConfigs.release
-            
+            signingConfig signingConfigs.release
             minifyEnabled true
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
