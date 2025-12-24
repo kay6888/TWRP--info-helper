@@ -1,0 +1,2 @@
+8789353d251ca4dae4af6112b75c2952  releases/twrp-info-helper-v2.2-beta.apk
+cf1c2ff6201fe6ffdc5fcb5851d55e3baca6670ff62ab59e7684beb3e4e3ab42  releases/twrp-info-helper-v2.2-beta.apk
