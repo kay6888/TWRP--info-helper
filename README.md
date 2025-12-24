@@ -60,6 +60,8 @@ This app helps you gather all the technical information about your Android devic
 5. Find the file at: `sdcard/Download/twrp-builder-{your-device-codename}.txt`
 6. Use this information when building TWRP at https://www.hovatek.com/twrpbuilder/
 
+Links
+Reddit -https://www.reddit.com/r/TWRPinfohelper/comments/1puj0by/my_app_for_testing/?utm_source=share&utm_medium=web3x&utm_name=web3xcss&utm_term=1&utm_content=share_button
 
 ## 🔗 Related Links
 
