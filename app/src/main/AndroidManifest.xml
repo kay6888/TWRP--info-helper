@@ -29,6 +29,12 @@
             android:exported="false"
             android:label="@string/settings_title"
             android:parentActivityName=".MainActivity" />
+        
+        <activity
+            android:name=".RecoveryFinderActivity"
+            android:exported="false"
+            android:label="Find Custom Recovery"
+            android:parentActivityName=".MainActivity" />
     </application>
 
 </manifest>

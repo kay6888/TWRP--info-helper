@@ -134,6 +134,13 @@ public class MainActivity extends AppCompatActivity {
             Intent intent = new Intent(this, SettingsActivity.class);
             startActivity(intent);
             return true;
+        } else if (item.getItemId() == R.id.action_find_recovery) {
+            // Launch Recovery Finder with device info
+            Intent intent = new Intent(this, RecoveryFinderActivity.class);
+            intent.putExtra("codename", Build.DEVICE);
+            intent.putExtra("manufacturer", Build.MANUFACTURER);
+            startActivity(intent);
+            return true;
         }
         return super.onOptionsItemSelected(item);
     }
